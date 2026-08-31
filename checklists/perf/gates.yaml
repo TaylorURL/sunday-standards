@@ -1,0 +1,445 @@
+- id: PRC-01
+  title: The Run Was Opened Before The Work
+  ask: A run exists and the changes are recorded against it. Work done outside a run is work nothing checked,
+    and an unchecked change looks exactly like a passing one afterwards.
+  probe: true
+  fix: perf-pass.py start --kind <kind> --target <path>
+- id: PRC-02
+  title: A Baseline Was Measured Before The First Edit
+  ask: The run holds a measurement taken before anything changed. Without one there is no way to tell
+    an improvement from a regression, and every later number is a claim rather than a comparison.
+  probe: true
+  fix: scripts/psi.py measure --url <live url> --label before, or scripts/lighthouse.py measure --url
+    <preview url> --label before
+- id: PRC-03
+  title: Scope Is Every Route, Not The One Named
+  ask: The targets cover every route the site serves, not only the page the prompt mentioned. A bundle
+    split on one route and left whole on nine others has not been split.
+  probe: true
+  fix: Widen the targets with scan --target, or answer n/a naming why those routes are outside this deliverable.
+- id: PRC-04
+  title: Every File In Scope Was Read And Ruled On
+  ask: Each file under the targets ends either changed or explicitly ruled as needing no performance change,
+    with the reason. A file nobody opened and a file considered and left alone are indistinguishable without
+    this.
+  probe: true
+  fix: perf-pass.py files, then read each one and either change it or file-clear it with a note.
+- id: PRC-05
+  title: Every Applicable Gate Is Answered
+  ask: No gate is left silent. A gate that is not met is work to do; the only ways past one are changing
+    the project or naming the condition that puts it out of scope.
+  probe: true
+  fix: perf-pass.py status lists what is open.
+- id: PRC-06
+  title: The Filled Checklist Was Rendered
+  ask: The run ends with the whole checklist shown - every gate, its verdict, the evidence, the before
+    and after numbers, and a section listing anything answered not applicable and why.
+  probe: true
+  fix: perf-pass.py report
+- id: DEL-01
+  title: The Canonical Host Answers Directly
+  ask: The host people actually reach - with and without www - serves the document itself rather than
+    redirecting to the other one. A redirect is a whole round trip on a cold mobile connection before
+    the browser has learned there is a page.
+  probe: true
+  fix: Serve both hosts from the same deployment, or make the redirect one hop to the canonical host and
+    point every link, sitemap entry and canonical tag at that host.
+- id: DEL-02
+  title: Text Assets Are Compressed
+  ask: HTML, CSS, JavaScript, JSON and SVG arrive brotli or gzip encoded. Uncompressed JavaScript is roughly
+    four times the bytes for the same behaviour, and the difference is paid on every cold visit.
+  probe: true
+  fix: Enable brotli at the edge. On a platform that does it by default, confirm it rather than assuming
+    it.
+- id: DEL-03
+  title: Hashed Assets Are Cached Forever
+  ask: Every asset whose filename carries a content hash is served immutable with a year-long max-age.
+    A hashed file cannot go stale by definition, so revalidating it spends a request to be told nothing
+    changed.
+  probe: true
+  fix: 'Set Cache-Control: public, max-age=31536000, immutable on the hashed asset directory.'
+- id: DEL-04
+  title: The Document Declares Its Own Freshness
+  ask: The HTML carries an explicit cache policy. Left unset, a CDN invents one, and the two failure modes
+    are a document cached past a deploy and a document never cached at all.
+  probe: true
+  fix: Set an explicit Cache-Control on the document, with stale-while-revalidate where the platform honours
+    it.
+- id: DEL-05
+  title: Origins On The Critical Path Are Preconnected
+  ask: Every origin the first screen depends on is preconnected. A cold origin costs DNS, TCP and TLS
+    before the first byte of whatever it was fetching, and the browser cannot start any of that until
+    it finds the reference.
+  probe: true
+  when: thirdparty
+  fix: Add rel=preconnect for the origins the first screen needs and rel=dns-prefetch for the rest. Preconnect
+    costs a connection, so it is for the few that matter.
+- id: DEL-06
+  title: No Third-Party Script Blocks The Document
+  ask: Analytics, tag managers, chat widgets and pixels carry defer or async, or are loaded after paint.
+    A third party in the critical path hands a stranger control of when the page appears.
+  probe: true
+  when: script
+  fix: Add defer or async. Load anything that is not needed for the first screen after the load event.
+- id: DEL-07
+  title: The Document Arrives Quickly
+  ask: Time to first byte stays under 800ms at the 75th percentile. Everything else in this checklist
+    starts counting from the moment the document lands, so a slow origin moves every metric at once.
+  probe: true
+  fix: Serve the document from the edge, cache it, and take the database out of the request path that
+    renders it.
+- id: DEL-08
+  title: Nothing Is Fetched That Is Never Used
+  ask: The first screen requests no asset it does not render - no preload for a font weight nothing sets,
+    no image for a carousel slide two, no stylesheet for a route nobody is on. A preload for an unused
+    asset is strictly worse than no preload, because it competes with the ones that matter.
+  probe: true
+  fix: Remove the preload, or use the asset it names on the first screen.
+- id: JSB-01
+  title: Routes Are Split From Each Other
+  ask: Each route loads its own code. Statically importing every page into the entry means a visitor to
+    the home page downloads the checkout, the admin panel and the legal text before anything is drawn.
+  probe: true
+  when: router
+  fix: Load route components through a dynamic import behind the router's own lazy boundary, with a fallback
+    that occupies the same space the route will.
+- id: JSB-02
+  title: No Dependency Ships Twice
+  ask: No two packages in the bundle do the same job, and no package appears at two versions. Two animation
+    libraries, two date libraries, or one library reached through both its own name and a fork are all
+    paid for in full and used once.
+  probe: true
+  fix: Pick one, change the imports to it, and remove the other from the manifest. The library that stays
+    is the one already used on the first screen.
+- id: JSB-03
+  title: Heavy Optional Work Is Imported Where It Is Used
+  ask: A library only some visitors need is imported at the point of need rather than at the top of the
+    entry. Payment SDKs, WebGL, editors, chart engines, PDF and video tooling belong behind the interaction
+    that opens them.
+  probe: true
+  fix: Move the import inside the handler or effect that first needs it, and await it there.
+- id: JSB-04
+  title: No Server-Only SDK Is In The Browser Bundle
+  ask: No package built for a server is imported into client code. Beyond the weight, an SDK that expects
+    a secret in the environment either ships one or fails at runtime, and both are worse than the size.
+  probe: true
+  fix: Move the call behind an endpoint. The browser talks to your own route; the SDK stays where its
+    credentials are.
+- id: JSB-05
+  title: Dependencies Are Split From Application Code
+  ask: Framework and vendor code sits in its own chunk. Application code changes far more often than its
+    dependencies, so a single chunk throws away a returning visitor's cache on every deploy.
+  probe: true
+  fix: Declare a manual chunk for the framework and the large stable dependencies.
+- id: JSB-06
+  title: First-Load JavaScript Is Under Budget
+  ask: The JavaScript the first screen needs stays under 200KB compressed. Past that the cost is not the
+    download but the parse and execute, which happens on the main thread while nothing else can.
+  probe: true
+  fix: Split routes, defer optional libraries, and remove what nothing imports. Measure with scripts/bundle-probe.py.
+- id: JSB-07
+  title: No Module Is Kept Alive By A Barrel
+  ask: No index file re-exports a directory that the entry then imports from. A barrel defeats tree shaking
+    wherever anything in it has a side effect, so one named import pulls the whole directory in.
+  probe: true
+  fix: Import from the module itself rather than through the barrel, or mark the package side-effect free
+    where it truly is.
+- id: JSB-08
+  title: The Chunk Graph Is Preloaded
+  ask: Chunks the entry will certainly need are declared with modulepreload rather than discovered one
+    import at a time. Each undeclared level of the graph is a serial round trip.
+  probe: true
+  fix: Emit modulepreload links for the entry graph. Most bundlers do this when asked; confirm the tags
+    are in the built HTML.
+- id: JSB-09
+  title: Polyfills Are Not Shipped To Browsers That Have The Feature
+  ask: The build targets what the site's visitors actually run. A default target from years ago transpiles
+    working syntax into more code that does the same thing more slowly.
+  probe: true
+  fix: Set an explicit browser target on the build. Anything supporting modules needs almost none of it.
+- id: RND-01
+  title: The Document Contains The First Screen
+  ask: The HTML that arrives already describes what the reader will see. An empty root element means first
+    paint cannot happen until the bundle has downloaded, parsed, executed and rendered, and every one
+    of those steps is on the critical path for a metric that is measured in seconds.
+  probe: true
+  when: spa
+  fix: Prerender the routes at build time, or server-render them. The output is the same markup the client
+    would have produced, so the reader sees no difference except that it arrives sooner.
+- id: RND-02
+  title: Stylesheets Are Not One Blocking Monolith
+  ask: The render-blocking CSS stays small enough to arrive in the first round trips. Every byte of it
+    is downloaded and parsed before anything paints, including the rules for routes the visitor is not
+    on.
+  probe: true
+  when: css
+  fix: Inline what the first screen needs and load the rest without blocking, or split the stylesheet
+    along the same lines as the routes.
+- id: RND-03
+  title: No Stylesheet Imports Another
+  ask: No CSS file pulls in another with @import. The browser cannot discover the second file until it
+    has parsed the first, which turns one round trip into two before anything paints.
+  probe: true
+  when: css
+  fix: Replace the @import with a link in the document, or let the bundler inline it at build time.
+- id: RND-04
+  title: Fonts Declare A Display Strategy
+  ask: Every face sets font-display. Without it text is invisible until the font arrives, so the paint
+    that gets measured is the one that waited for a download the reader would rather not have waited for.
+  probe: true
+  when: font
+  fix: 'Set font-display: swap on each @font-face, or the display option on the framework''s font loader.'
+- id: RND-05
+  title: Fonts Are Self-Hosted, Preloaded And Subset
+  ask: Faces used on the first screen are served from the site's own origin, preloaded, and cut down to
+    the characters the site actually sets. A third-party font host adds a cold origin to the critical
+    path for a file that could have arrived with the page.
+  probe: true
+  when: font
+  fix: Self-host the woff2, subset it to the ranges in use, and preload only the faces the first screen
+    sets.
+- id: RND-06
+  title: A Fallback Face Is Metric-Matched
+  ask: The fallback declared beside each web font is sized to occupy the same space. Swapping from an
+    unmatched fallback reflows every line of text it was standing in for, which is layout shift caused
+    by a loading strategy.
+  probe: true
+  when: font
+  fix: Declare a local fallback with size-adjust and the ascent and descent overrides that match the web
+    font.
+- id: RND-07
+  title: The Largest Element Is Discoverable In The HTML
+  ask: Whatever the browser will measure as the largest paint is referenced by the document itself, preloaded
+    and marked high priority. An image the bundle discovers after it mounts cannot begin downloading until
+    the bundle has run.
+  probe: true
+  fix: Reference the hero in the document, preload it with fetchpriority high, and keep it out of any
+    component that mounts late.
+- id: RND-08
+  title: Nothing Reserves The Reader's Attention For Itself
+  ask: No splash screen, entrance overlay, cookie wall or intro animation stands between the document
+    and the content. Each one is a deliberate delay in front of the exact moment the metrics measure.
+  probe: true
+  fix: Where the gate is a design decision it stays and is answered n/a with that reason. Where it exists
+    because the content was not ready, fix the content path instead.
+- id: IMG-01
+  title: A Phone Receives A Phone-Sized File
+  ask: Every content image offers widths through srcset with a sizes attribute that describes its layout.
+    Serving one desktop-width file to a 390 point screen spends four times the bytes to draw the same
+    picture.
+  probe: true
+  fix: Generate the widths at build time and declare srcset and sizes. The rendered result is identical;
+    only the file chosen changes.
+- id: IMG-02
+  title: The Largest Image Loads Eagerly And First
+  ask: The hero is not lazy and carries fetchpriority high. Lazy loading the element the browser will
+    measure as the largest paint delays the metric by exactly the time it takes to discover it.
+  probe: true
+  fix: Remove loading=lazy from the hero and set fetchpriority=high on it.
+- id: IMG-03
+  title: Everything Below The Fold Is Lazy
+  ask: Images that start off screen declare loading=lazy. They compete for bandwidth with the first screen
+    otherwise, and the reader may never reach them.
+  probe: true
+  fix: Add loading=lazy to every image that is not on the first screen. Leave the first screen eager.
+- id: IMG-04
+  title: Every Image Reserves Its Space
+  ask: Each image declares intrinsic width and height, or an aspect ratio in CSS. Without them the page
+    reflows the moment each file lands, which is layout shift the reader sees as the page jumping while
+    they read.
+  probe: true
+  fix: Set width and height attributes to the file's real pixel dimensions, or an aspect-ratio on the
+    element.
+- id: IMG-05
+  title: Files Are In A Modern Format
+  ask: Photographs are served as AVIF or WebP with the older format only as a fallback. The same picture
+    at the same quality is roughly a third of the bytes.
+  probe: true
+  fix: Encode AVIF and WebP derivatives and offer them through a picture element or the platform's image
+    pipeline.
+- id: IMG-06
+  title: No Image Is Larger Than It Is Displayed
+  ask: No file arrives at more than twice the pixel dimensions it is drawn at. The excess is decoded and
+    thrown away, and decoding happens on the main thread.
+  probe: true
+  fix: Resize the source to the largest size it is actually displayed at, then generate the responsive
+    widths from that.
+- id: IMG-07
+  title: Embeds Load On Demand
+  ask: Video players, maps and social embeds are represented by a still image until the reader asks for
+    them. A third-party player iframe costs more than the rest of the page put together and most readers
+    never press play.
+  probe: true
+  when: embed
+  fix: Show a thumbnail with the player's own controls drawn on it, and mount the real embed on click.
+- id: IMG-08
+  title: Total Image Weight Is Under Budget
+  ask: The images the first screen loads stay under 500KB together. A gallery that eagerly loads twenty
+    photographs is a slow page regardless of how each one was encoded.
+  probe: true
+  fix: Lazy load the gallery, paginate it, or load it behind an interaction.
+- id: INP-01
+  title: Animation Runs On The Compositor
+  ask: Continuous motion animates transform and opacity and nothing else. Animating width, height, top,
+    left, margin or box-shadow makes the browser lay the page out again on every frame, on the same thread
+    that has to answer the next tap.
+  probe: true
+  when: animation
+  fix: Express the same motion as a transform. A slide is translate, a grow is scale, a fade is opacity
+    - the result on screen is identical.
+- id: INP-02
+  title: Scroll Handlers Are Passive And Cheap
+  ask: Every scroll, wheel and touch listener is registered passive and does no layout reading. A non-passive
+    listener makes the browser wait for it before it may scroll at all.
+  probe: true
+  fix: 'Pass {passive: true}. Where the handler measures the page, move the measurement to an IntersectionObserver
+    or a ResizeObserver, which run off the main thread.'
+- id: INP-03
+  title: Nothing Loops Forever
+  ask: Every requestAnimationFrame loop stops when its subject leaves the screen, when the tab is hidden,
+    and when the reader has asked for reduced motion. A particle field that keeps drawing behind the footer
+    competes with every interaction on the page for as long as the visit lasts.
+  probe: true
+  when: raf
+  fix: Cancel the frame on intersection loss and on visibilitychange, and never start it under prefers-reduced-motion.
+- id: INP-04
+  title: Layout Is Not Read And Written In The Same Pass
+  ask: No code reads a measured property and then writes a style in the same loop. Each alternation forces
+    a synchronous layout, and in a loop that is one full layout per iteration.
+  probe: true
+  fix: Read every measurement first, then write. Where the loop is long, batch the writes into the next
+    animation frame.
+- id: INP-05
+  title: Input Handlers Yield Before Doing Work
+  ask: A handler that does more than update what was touched gives the browser a chance to paint first.
+    The measured delay ends at the next paint, so painting the response before doing the rest of the work
+    is the whole difference.
+  probe: true
+  fix: Paint the immediate feedback, yield, then continue. Filtering, sorting and network calls belong
+    after the yield.
+- id: INP-06
+  title: Large Lists Are Not Rendered Whole
+  ask: A list long enough to exceed the viewport several times over renders what is visible. Every row
+    that exists is layout, style and memory the browser carries through every interaction.
+  probe: true
+  when: list
+  fix: 'Windowing, pagination, or content-visibility: auto on the rows. The reader sees the same list.'
+- id: INP-07
+  title: Off-Screen Sections Are Skipped
+  ask: Sections below the fold declare content-visibility so the browser can skip their layout and paint
+    until they are approached. Every section costs style and layout at load whether or not anybody scrolls
+    to it.
+  probe: true
+  fix: 'Set content-visibility: auto with a contain-intrinsic-size that matches the section''s real height,
+    so nothing shifts when it is skipped.'
+- id: INP-08
+  title: Third-Party Code Does Not Own The Main Thread
+  ask: No embedded script runs long tasks during or after load. A tag manager and a chat widget are each
+    capable of holding the thread for longer than the whole interaction budget.
+  probe: true
+  when: thirdparty
+  fix: Load it after the load event, on an interaction, or in a worker. Where it must run, budget it and
+    measure what it costs.
+- id: MSR-01
+  title: Before And After Were Measured The Same Way
+  ask: Both numbers come from the same tool, the same form factor and the same URL. A lab run compared
+    against a field score, or a phone run against a desktop one, is two different questions with one answer
+    written under them.
+  probe: true
+  fix: scripts/psi.py measure --url <url> --label after, then scripts/psi.py compare.
+- id: MSR-02
+  title: Field Data Was Read, Not Only The Lab Score
+  ask: The run read what real visitors experience at the 75th percentile. The lab score is a simulation
+    on one throttled connection; the field record is the number that describes the site and the one that
+    ranks it.
+  probe: true
+  fix: scripts/psi.py field --url <url>. Where a URL has too little traffic to have its own record, read
+    the origin's.
+- id: MSR-03
+  title: The Metric That Is Actually Failing Was Named
+  ask: The run states which metric is out of threshold and worked on that one. Lab scores are dominated
+    by loading, so a site rated poor on responsiveness can be optimised all day without the rating moving.
+  probe: true
+  fix: 'Read the field record: LCP good under 2.5s, INP good under 200ms, CLS good under 0.1. Work the
+    one that is failing.'
+- id: MSR-04
+  title: The Measured URL Is The One People Reach
+  ask: The measurement was taken against the host and path visitors actually land on. Measuring a host
+    that redirects reports the redirect as part of the page, and measuring only the home page says nothing
+    about the routes carrying the traffic.
+  probe: true
+  fix: Measure the canonical host, and measure the busiest routes as well as the home page.
+- id: MSR-05
+  title: Something Got Faster
+  ask: The after numbers beat the before numbers on the metric the run set out to fix. A run that measured,
+    changed the project and moved nothing has found that its theory was wrong, and that is a result to
+    record rather than to leave unsaid.
+  probe: true
+  fix: scripts/psi.py compare prints the delta per metric. Where nothing moved, say so and say what the
+    next candidate is.
+- id: MSR-06
+  title: A Budget Was Written Down
+  ask: The project records the weights and timings it intends to hold, so the next change that breaks
+    them is caught by something other than a person noticing the site feels slow.
+  probe: true
+  fix: scripts/bundle-probe.py budget --write records the current weights as the ceiling.
+- id: PAR-01
+  title: A Before Capture Exists
+  ask: 'The rendered page was captured before anything was edited, at every viewport the run answers for.
+    A capture taken afterwards proves nothing: it records the state the work already produced.'
+  probe: true
+  fix: Serve the current build, run scripts/parity-probe.js in the page, and file it with perf-pass.py
+    parity --phase before --file <capture.json>.
+- id: PAR-02
+  title: Rendered Geometry Is Unchanged
+  ask: Every element that was on the page is still there, at the same position and the same size, at every
+    viewport. Position is what a reader means by layout, so a box that moved is a design change however
+    it was caused.
+  probe: true
+  fix: perf-pass.py parity --diff names each element that moved. Revert the change that moved it, or reserve
+    the space the deferred content used to occupy.
+- id: PAR-03
+  title: Computed Style Is Unchanged
+  ask: Colour, type, weight, spacing, radius, shadow and transform of every captured element still compute
+    to the same values. A font swapped for a system stack and a shadow dropped with a stylesheet both
+    pass a geometry check and both are visible.
+  probe: true
+  fix: perf-pass.py parity --diff names each property that changed. Put it back; find the loading win
+    somewhere it does not cost the appearance.
+- id: PAR-04
+  title: Every Route Still Exists And Still Renders
+  ask: The route inventory after the work matches the one before, and each route still reaches a rendered
+    state. Splitting a bundle wrongly turns a route into a blank frame, which no metric on the home page
+    will ever show.
+  probe: true
+  fix: Load each route from the captured inventory. A route that fails is a broken import boundary, not
+    a slow one.
+- id: PAR-05
+  title: Interactive Controls Still Respond
+  ask: The controls the capture recorded - links, buttons, inputs, menus, forms - still respond to input.
+    Deferring a script is invisible until the thing it powers is the thing a visitor came to use.
+  probe: true
+  fix: Exercise each control the capture listed. A control that went inert has lost the module it was
+    waiting on; import it at the point of use rather than dropping it.
+- id: PAR-06
+  title: No Console Error Was Introduced
+  ask: The page throws nothing it did not already throw. A dynamic import that fails is silent to every
+    loading metric and fatal to the feature behind it.
+  probe: true
+  fix: Read the after capture's console entries against the before. Fix the import, do not catch and swallow
+    it.
+- id: PAR-07
+  title: Motion Behaves As It Did
+  ask: Animations, transitions and scroll effects still run, at the same durations and the same triggers.
+    Moving an animation onto the compositor is invisible; removing it is not, and the two are one line
+    apart.
+  probe: true
+  when: animation
+  fix: Compare the captured animation inventory. A transform-and-opacity rewrite keeps the motion; deleting
+    the library ends it.
+- id: PAR-08
+  title: The After Capture Was Taken On The Built Output
+  ask: Parity is measured on the production build, not the dev server. Dev serves unminified modules with
+    no splitting, so it renders a page the visitor never receives and hides every defect the build introduces.
+  probe: true
+  fix: Build, serve the build, and capture from that.

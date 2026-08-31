@@ -1,0 +1,8 @@
+runs:
+- ~/.sunday/profile/state/perf-runs
+pointer: current*.json
+answered:
+- pass
+- fixed
+- na
+- n/a

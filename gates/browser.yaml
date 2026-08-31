@@ -1,0 +1,15 @@
+- id: real-browser
+  title: Reaching for the desktop browser
+  bundle: seatbelt
+  on: PreToolUse
+  match: {}
+  when:
+    any:
+      - { field: tool, matches: '^mcp__claude-in-chrome__' }
+      - { field: command, matches: '(?i)(^|[\s/"])(google chrome|google-chrome|chrome.exe|chromeium|chrome-headless-shell|msedge|brave)(\s|$|")' }
+      - { field: command, matches: '(?i)(chromedriver|puppeteer|playwright)\s' }
+      - { field: command, matches: '(?i)(CHROME_PATH|PUPPETEER_EXECUTABLE_PATH|CHROME_BIN)=' }
+  action: deny
+  message: |
+    Browsing goes through the in-app browser, which carries no signed-in
+    profile. Use the Claude_Browser tools rather than the desktop binary.

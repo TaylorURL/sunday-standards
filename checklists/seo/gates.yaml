@@ -1,0 +1,474 @@
+- id: PRC-01
+  title: The Run Was Opened Before The Work
+  ask: A run exists and the changes are recorded against it. Work done outside a run is work nothing checked,
+    and an unchecked change looks exactly like a passing one afterwards.
+  probe: true
+  fix: seo-pass.py start --kind <kind> --target <path>
+- id: PRC-02
+  title: Scope Is Every Route, Not The One Named
+  ask: The targets cover every route a crawler reaches, not only the page the prompt mentioned. A title
+    fixed on one route and left wrong on nine others has not been fixed.
+  probe: true
+  fix: Widen the targets with scan --target, or answer n/a naming why those routes are outside this deliverable.
+- id: PRC-03
+  title: Every File In Scope Was Read And Ruled On
+  ask: Each file under the targets ends either changed or explicitly ruled as needing no SEO change, with
+    the reason. A file nobody opened and a file considered and left alone are indistinguishable without
+    this.
+  probe: true
+  fix: seo-pass.py files, then read each one and either change it or file-clear it with a note.
+- id: PRC-04
+  title: Copy A Person Reads Passes The Writing Standard
+  ask: Titles, descriptions and body copy are read by people before they are parsed by a crawler, so they
+    answer to the avoid-ai-writing standard like any other user-facing string.
+  probe: true
+  severity: required
+  fix: Invoke avoid-ai-writing and rewrite what it flags, then verify again.
+- id: PRC-05
+  title: Every Applicable Gate Is Answered
+  ask: No gate is left silent. A gate that is not met is work to do; the only ways past one are changing
+    the project or naming the condition that puts it out of scope.
+  probe: true
+  fix: seo-pass.py status lists what is open.
+- id: PRC-06
+  title: The Filled Checklist Was Rendered
+  ask: The run ends with the whole checklist shown - every gate, its verdict, the evidence, and a section
+    listing anything answered not applicable and why.
+  probe: true
+  fix: seo-pass.py report
+- id: CRW-01
+  title: robots.txt Exists
+  ask: The site serves a robots.txt. Without one there is no sitemap pointer, no crawl policy, and no
+    place to state a position on any crawler.
+  probe: true
+  severity: blocker
+  fix: Add robots.txt to the directory this stack serves static files from - public/, static/, or the
+    project root.
+- id: CRW-02
+  title: robots.txt Points At The Sitemap
+  ask: robots.txt carries a Sitemap line holding an absolute URL. It is the one discovery path that works
+    without anybody submitting anything.
+  probe: true
+  severity: blocker
+  fix: 'Add `Sitemap: https://<host>/sitemap.xml` to robots.txt.'
+- id: CRW-03
+  title: Nothing Is Disallowed Wholesale
+  ask: 'No `Disallow: /` under `User-agent: *`. A staging robots.txt shipped to production removes the
+    site from search and nothing on the site says so.'
+  probe: true
+  severity: blocker
+  fix: Narrow the Disallow to the paths that should stay out, or drop it.
+- id: CRW-04
+  title: A Sitemap Exists Or Is Generated
+  ask: Either sitemap.xml is served or the build produces one. A sitemap is how routes that nothing links
+    to are found at all.
+  probe: true
+  severity: blocker
+  fix: Add sitemap.xml, or wire the framework's sitemap generator and commit its config.
+- id: CRW-05
+  title: No Route Carries An Unintended noindex
+  ask: Every noindex in the source is deliberate and scoped to a route that should stay out of the index.
+    This is the single defect that removes a site outright, and it reads as ordinary markup.
+  probe: true
+  severity: blocker
+  fix: Read each occurrence. Remove the ones that are left over from staging; leave the ones that are
+    meant.
+- id: CRW-06
+  title: Robots Directives Are Set, Not Inherited
+  ask: The project states its indexing policy rather than leaving it to whatever headers the host sends.
+    A directive that only exists in a hosting panel is invisible to the next person and to the next deploy.
+  probe: true
+  fix: Set a robots meta tag or the framework's robots metadata field in the document shell.
+- id: CRW-07
+  title: Every Route Declares Its Canonical
+  ask: Each route names its own canonical URL. Without one, a query string, a trailing slash, and a www
+    variant are three pages competing with each other for the same ranking.
+  probe: true
+  when: pages
+  severity: blocker
+  fix: Add rel=canonical to the head, or set the framework's alternates.canonical per route.
+- id: CRW-08
+  title: Documents Stay Inside The Fetch Limit
+  ask: Googlebot reads the first 2MB of an HTML response. Inline base64 images and bloated markup push
+    structured data and body copy past the cap, where they are not indexed at all.
+  probe: true
+  when: html
+  fix: Move inline assets to files and trim the markup so the content and the JSON-LD sit well inside
+    2MB.
+- id: CRW-09
+  title: Route Paths Are Lowercase And Hyphenated
+  ask: URLs are case-sensitive and an underscore does not separate words for a crawler. A route at /Blog_Posts
+    and one at /blog-posts are different pages, and only one of them reads as two words.
+  probe: true
+  when: pages
+  fix: Rename the route directories to lowercase hyphenated segments and redirect the old paths.
+- id: HED-01
+  title: Every Route Sets A Title
+  ask: Each route sets its own title, whether by a title tag or the framework's metadata. A route with
+    no title of its own inherits the layout's, and a whole site ranks under one name.
+  probe: true
+  severity: blocker
+  fix: Set a title per route - a title tag, a metadata export, or whatever this stack uses.
+- id: HED-02
+  title: Titles Fit The Result
+  ask: A title runs 30 to 60 characters. Under 30 it wastes the most valuable line on the page; over 60
+    Google truncates it mid-phrase and the reader never sees the end.
+  probe: true
+  fix: Rewrite the long ones to lead with the subject and put the brand last.
+- id: HED-03
+  title: No Two Routes Share A Title
+  ask: Every title is distinct. Two routes with one title are two results a person cannot tell apart,
+    and two pages the crawler treats as candidates for the same query.
+  probe: true
+  when: multipage
+  fix: Give each route a title naming what that route is, not what the site is.
+- id: HED-04
+  title: Every Route Sets A Description
+  ask: Each route sets a meta description. Without one the result shows whatever fragment of body copy
+    happens to match the query, which is rarely the sentence worth showing.
+  probe: true
+  severity: blocker
+  fix: Write a description per route saying what the page does and why to open it.
+- id: HED-05
+  title: Descriptions Fit The Result
+  ask: A description runs 120 to 160 characters. Shorter leaves the snippet half empty; longer is cut
+    at the truncation point, which is usually mid-sentence.
+  probe: true
+  fix: Trim or extend each one so the whole sentence survives the cut.
+- id: HED-06
+  title: No Two Routes Share A Description
+  ask: Every description is distinct. A description repeated across a site describes the site, which is
+    not what a person scanning results is deciding between.
+  probe: true
+  when: multipage
+  fix: Rewrite the duplicates around what each route specifically offers.
+- id: HED-07
+  title: The Document Declares Its Language
+  ask: The root element carries a lang attribute. Screen readers pick a voice from it, hreflang is meaningless
+    without it, and a mismatched language is a reason to be shown to the wrong audience.
+  probe: true
+  when: always
+  fix: Set lang on the html element in the document shell.
+- id: HED-08
+  title: The Document Declares Its Charset
+  ask: A charset declaration sits in the head. Without it the browser guesses, and a guess that lands
+    wrong turns every non-ASCII character in a title into noise.
+  probe: true
+  when: always
+  fix: Add `<meta charset="utf-8">` as the first element in the head.
+- id: HED-09
+  title: The Document Declares Its Viewport
+  ask: The shell sets a viewport. Mobile is the primary crawler, and a page without one renders at desktop
+    width on a phone and is judged on that.
+  probe: true
+  when: always
+  fix: Add `<meta name="viewport" content="width=device-width, initial-scale=1">` to the shell.
+- id: SOC-01
+  title: Every Route Carries The Open Graph Set
+  ask: 'og:title, og:description, og:image, og:url and og:type on every route. A partial set is worse
+    than none: the card renders with a gap where the image should be.'
+  probe: true
+  fix: Set the five properties per route, or the framework's openGraph metadata object.
+- id: SOC-02
+  title: og:image Is An Absolute URL
+  ask: Every og:image is an absolute URL. The card is built by a service fetching the tag away from the
+    page, so a relative path resolves against nothing and the image is dropped.
+  probe: true
+  when: always
+  severity: blocker
+  fix: Prefix each image path with the full origin, or build it from the site URL constant.
+- id: SOC-03
+  title: A Twitter Card Type Is Declared
+  ask: twitter:card names the card shape. Without it the link falls back to a bare text row while every
+    other link in the timeline carries an image.
+  probe: true
+  when: always
+  fix: Set twitter:card to summary_large_image, and the title, description and image alongside it.
+- id: STR-01
+  title: One h1 Per Route
+  ask: Exactly one h1. Several h1 elements leave nothing stating what the page is about, and the outline
+    has no root to hang the rest of the headings from.
+  probe: true
+  severity: blocker
+  fix: Keep the one that names the page and demote the rest to h2.
+- id: STR-02
+  title: Routes That Render Headings Open With h1
+  ask: A route with headings starts at h1. Starting at h2 because it looked smaller is styling decided
+    in the markup, and it costs the page its top-level subject.
+  probe: true
+  fix: Promote the opening heading to h1 and set its size in the stylesheet.
+- id: STR-03
+  title: No Heading Level Is Skipped
+  ask: Levels descend one at a time. An h2 followed by an h4 tells a machine reader a section is missing,
+    and the outline it builds is wrong in a way nothing on the rendered page reveals.
+  probe: true
+  fix: Renumber the headings so each step down is one level.
+- id: STR-04
+  title: The Page Has Landmarks
+  ask: main, nav, header and footer exist as elements or roles. The accessibility tree is the cleanest
+    signal an agent reads, and a page built entirely from div elements gives it nothing to orient on.
+  probe: true
+  when: always
+  fix: Replace the wrapper divs with the semantic elements they already stand in for.
+- id: STR-05
+  title: Anchor Text Says Where It Goes
+  ask: No link whose entire label is a placeholder. The anchor text is what the destination ranks for,
+    so a site full of `read more` links passes its ranking signal to nothing.
+  probe: true
+  when: link
+  fix: Replace each placeholder with the destination's subject.
+- id: STR-06
+  title: Every Route Links Onward
+  ask: Each route carries at least one outgoing link. A route linked from nowhere and linking to nothing
+    is reachable only through the sitemap, and passes nothing on to the rest of the site.
+  probe: true
+  fix: Add links from each route to the related routes a reader would want next.
+- id: STR-07
+  title: A Breadcrumb Trail Exists
+  ask: The site renders a breadcrumb trail. It is the one navigation element Google shows in place of
+    the raw URL in a result, and it tells a reader where the page sits before they open it.
+  probe: true
+  when: multipage
+  fix: Render a breadcrumb nav on nested routes and mark it up as BreadcrumbList.
+- id: STR-08
+  title: Interaction Lives On Real Controls
+  ask: Clicks are bound to buttons and links, not to divs and spans. An agent reading the accessibility
+    tree finds nothing it can act on, and a keyboard reaches none of it.
+  probe: true
+  when: always
+  fix: Swap each clickable div for a button or an anchor and let it keep its own styling.
+- id: SCH-01
+  title: The Project Emits JSON-LD
+  ask: Structured data exists, as JSON-LD. It is Google's stated preference and the only format that does
+    not entangle the markup with the meaning.
+  probe: true
+  severity: blocker
+  fix: Add a JSON-LD island to the document shell describing the site, and per-route islands for what
+    each route is.
+- id: SCH-02
+  title: Every Island Parses
+  ask: Each literal JSON-LD block is valid JSON carrying @context and @type. A block with a trailing comma
+    is not partially read - it is discarded whole, silently.
+  probe: true
+  when: jsonld
+  severity: blocker
+  fix: Fix the syntax and make sure every node declares both @context and @type.
+- id: SCH-03
+  title: URLs Inside The Markup Are Absolute
+  ask: url, logo, image, sameAs and @id hold absolute URLs. Structured data is read away from the page
+    it came from, so a relative path resolves against nothing.
+  probe: true
+  when: jsonld
+  severity: blocker
+  fix: Build each URL from the site origin constant rather than writing a path.
+- id: SCH-04
+  title: No Placeholder Values Survive
+  ask: No template text left in the markup. Structured data that contradicts the page is a manual-action
+    risk, and a bracketed placeholder contradicts everything.
+  probe: true
+  when: jsonld
+  severity: blocker
+  fix: Fill each value from the real data, or drop the property.
+- id: SCH-05
+  title: No Retired Type Is In Use
+  ask: No HowTo, SpecialAnnouncement, CourseInfo, EstimatedSalary, LearningVideo, ClaimReview or VehicleListing.
+    Each produces no rich result and has not since Google removed it, so the markup is weight with no
+    return.
+  probe: true
+  when: jsonld
+  fix: Remove the retired type, or replace it with the live type that covers the same content.
+- id: SCH-06
+  title: The Site Declares Who Publishes It
+  ask: An Organization, LocalBusiness, Person or WebSite node exists. It is what every other entity claim
+    hangs off, and without it the brand is a string rather than a thing.
+  probe: true
+  severity: blocker
+  fix: Add an Organization or Person node in the shell with name, url, logo and sameAs.
+- id: SCH-07
+  title: Breadcrumbs Are Marked Up
+  ask: BreadcrumbList markup accompanies the rendered trail. It is what turns the URL line of a result
+    into a readable path.
+  probe: true
+  when: multipage
+  fix: Emit BreadcrumbList alongside the breadcrumb nav, with position and item on each entry.
+- id: SCH-08
+  title: Articles Are Marked Up As Articles
+  ask: Editorial routes carry Article, BlogPosting or NewsArticle with headline, author, datePublished
+    and image. Without it a post is an untyped page competing with typed ones.
+  probe: true
+  when: article
+  fix: Add BlogPosting to each post template, built from the post's own front matter.
+- id: SCH-09
+  title: Products Are Marked Up As Products
+  ask: Product routes carry Product markup with offers, price and availability. It is what puts a price
+    in the result, and its absence is the difference between a listing and a link.
+  probe: true
+  when: product
+  fix: Add Product with an Offer node to the product template, rendered server-side rather than injected.
+- id: IMG-01
+  title: Every Image Has An alt Attribute
+  ask: Each image element carries alt. A decorative image takes alt="", which says it is decorative; there
+    is no third option, and a missing attribute says nothing at all.
+  probe: true
+  severity: blocker
+  fix: Describe the content-bearing images and give the decorative ones an empty alt.
+- id: IMG-02
+  title: alt Describes The Image
+  ask: alt text names what is in the picture, in 125 characters or fewer. A filename, the word `image`,
+    or a run of keywords all pass a presence check and describe nothing.
+  probe: true
+  fix: Rewrite each one as the sentence you would say to somebody who cannot see it.
+- id: IMG-03
+  title: Every Image Reserves Its Space
+  ask: Each image sets width and height, or an aspect ratio. An image without dimensions is the single
+    most common cause of layout shift, and layout shift is a ranking input.
+  probe: true
+  severity: blocker
+  fix: Set the intrinsic width and height on each image and let CSS scale it.
+- id: IMG-04
+  title: Raster Images Are Not Oversized
+  ask: No raster image over 200KB. WebP or AVIF at the same visual quality is typically a third the bytes,
+    and the largest image on a page is usually the largest paint on it too.
+  probe: true
+  when: raster
+  fix: Convert the heavy files to WebP or AVIF, or serve them through the framework's image pipeline.
+- id: IMG-05
+  title: Below-The-Fold Images Are Deferred
+  ask: Images past the first screen carry loading="lazy". Every one of them competes with the hero for
+    the same connection while the reader is looking at the top of the page.
+  probe: true
+  fix: Add loading="lazy" to everything below the fold, and leave the hero eager.
+- id: IMG-06
+  title: The Hero Image Is Not Deferred
+  ask: The first image in the document is not lazy. Deferring the largest paint delays the metric it is
+    measured by, which is the opposite of what lazy loading is for.
+  probe: true
+  severity: blocker
+  fix: Remove loading="lazy" from the hero and give it fetchpriority="high" or the framework's priority
+    flag.
+- id: PRF-01
+  title: No Script Blocks The First Paint
+  ask: Every external script carries defer, async, or type=module. A blocking script in the head stops
+    parsing until it has been fetched and run, and the reader looks at nothing for the length of that
+    round trip.
+  probe: true
+  when: script
+  fix: Add defer to anything that does not have to run before first paint; async to anything order-independent.
+- id: PRF-02
+  title: Web Fonts Declare A Display Strategy
+  ask: Every web font sets font-display. Without it text stays invisible until the font arrives, so the
+    paint that gets measured is the one that waited for a download nobody needed to wait for.
+  probe: true
+  when: font
+  fix: 'Set font-display: swap on each @font-face, or the display option on the framework''s font loader.'
+- id: PRF-03
+  title: The Largest Paint Is Prioritised
+  ask: The hero image or font is preloaded or given a fetch priority. Otherwise its request waits to be
+    discovered by the stylesheet that references it, which is a whole round trip late.
+  probe: true
+  fix: Preload the hero asset in the head, or mark it fetchpriority="high".
+- id: PRF-04
+  title: Third-Party Origins Are Preconnected
+  ask: A site pulling from three or more external origins opens those connections early. Each cold origin
+    costs DNS, TCP and TLS before the first byte of the thing it was fetching.
+  probe: true
+  fix: Add rel="preconnect" for the origins on the critical path and rel="dns-prefetch" for the rest.
+- id: PRF-05
+  title: Nothing Injects Markup After Paint
+  ask: No document.write and no innerHTML assignment building markup at runtime. Content arriving after
+    layout moves everything below it, and that movement is the metric.
+  probe: true
+  fix: Render the content server-side, or reserve its space before it arrives.
+- id: PRF-06
+  title: The Back Button Still Works
+  ask: Nothing traps the reader by rewriting history. Defeating the Back button became a named spam-policy
+    violation in 2026 and is enforced with manual actions, not a demotion nobody can see.
+  probe: true
+  fix: Remove the history handler, or confirm one press of Back leaves the site.
+- id: CNT-01
+  title: No Route Is Thin
+  ask: Each route carries enough of its own copy to answer the query it targets. A service page runs 800
+    words, a post 1,500, a category 400 - a route far under its type's floor competes with pages that
+    are not.
+  probe: true
+  fix: Write the missing content, merge the route into a fuller one, or answer n/a naming the route as
+    a shell that renders its copy from data.
+- id: CNT-02
+  title: No Filler Copy Ships
+  ask: No lorem ipsum and no placeholder prose anywhere in the markup. Filler indexes exactly as well
+    as real copy does, and it is what the page then ranks for.
+  probe: true
+  when: always
+  severity: blocker
+  fix: Replace each block with the real copy, or remove the section.
+- id: CNT-03
+  title: The Answer Comes First
+  ask: A long route states its answer in the opening lines rather than building to it. Roughly half of
+    AI citations are taken from the first third of a page, and a buried conclusion is not quoted.
+  probe: true
+  fix: Move the direct statement to the top of each section and let the detail follow it.
+- id: CNT-04
+  title: Content Is Attributed
+  ask: An author is named. Experience and authorship are what the quality guidelines are written around,
+    and anonymous content has neither to show.
+  probe: true
+  when: always
+  fix: Add a byline with a real person and link it to a page that says who they are.
+- id: CNT-05
+  title: Dates Are Visible
+  ask: Editorial content renders when it was published and when it was last changed. A reader deciding
+    whether a page is current has nothing else to go on, and neither does anything reading it.
+  probe: true
+  when: article
+  fix: Render the dates on the page and mirror them into datePublished and dateModified.
+- id: CNT-06
+  title: Headings Match The Question
+  ask: At least some headings are phrased the way a query is. A heading that matches the question is the
+    string a generative answer quotes, and a site of noun-phrase headings matches none of them.
+  probe: true
+  fix: Rewrite the section headings people actually search as the question they would type.
+- id: GEO-01
+  title: The Site Takes A Position On AI Crawlers
+  ask: 'robots.txt names the AI crawlers and allows or disallows them deliberately. Silence is not neutrality:
+    it hands the decision to each company. Blocking Google-Extended does not affect Search, and blocking
+    GPTBot does not stop ChatGPT citing the site through browsing.'
+  probe: true
+  fix: Add a User-agent block per crawler with the stance the project actually wants.
+- id: GEO-02
+  title: llms.txt Gives The Site's Shape
+  ask: An llms.txt lists what the site is and where its substantial pages are. Google does not use it,
+    so this is not a ranking gate - it is a one-fetch map for the readers that do.
+  probe: true
+  severity: recommended
+  fix: 'Write llms.txt at the site root: a title, a one-line summary, and linked sections for the pages
+    worth reading.'
+- id: LOC-01
+  title: hreflang Covers Every Locale And x-default
+  ask: Every locale points at every other, and an x-default catches the rest. A set without x-default
+    sends a visitor whose locale is unlisted nowhere in particular.
+  probe: true
+  when: international
+  severity: blocker
+  fix: Emit the full reciprocal set on every localised route, including x-default.
+- id: LOC-02
+  title: Locale Codes Are Well Formed
+  ask: Each hreflang is a two-letter language, optionally with a two-letter region in caps. A malformed
+    code is not partially honoured - the whole annotation is dropped.
+  probe: true
+  when: international
+  fix: Correct each code to the language or language-REGION form.
+- id: LOC-03
+  title: One Phone Number Across The Site
+  ask: Name, address and phone appear identically everywhere. Citations are matched on exact strings,
+    so a second phone number splits one business into two as far as the match is concerned.
+  probe: true
+  when: local
+  fix: Move the contact details into one constant and render every appearance from it.
+- id: LOC-04
+  title: LocalBusiness Markup Is Complete
+  ask: A LocalBusiness node carrying address, telephone, openingHours and geo. A node missing any of them
+    is a partial answer to the question a local result is built from.
+  probe: true
+  when: local
+  severity: blocker
+  fix: Add the missing properties from the same source the rendered contact block uses.

@@ -1,0 +1,63 @@
+- id: ai-attribution-author
+  title: A commit or push naming an assistant as the author
+  bundle: seatbelt
+  on: PreToolUse
+  match: { tool: Bash, requires: ["git"] }
+  when:
+    all:
+      - { field: command, matches: 'git\s+(commit|push|rebase|cherry-pick|am)' }
+      - any:
+          - { field: command, matches: '(?i)--author[= ][^ ]*(claude|anthropic|copilot|chatgpt|gpt-[0-9]|codex|cursor|gemini|bot)' }
+          - { field: command, matches: '(?i)-c\s+user\.(name|email)=[^ ]*(claude|anthropic|copilot|chatgpt|gpt|codex|cursor|bot)' }
+          - { field: command, matches: '(?i)GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)=[^ ]*(claude|anthropic|copilot|chatgpt|gpt|codex|cursor|bot)' }
+  action: deny
+  message: |
+    This would land a commit authored by an assistant. Commits are written as
+    you. Drop the author override and let git use your configured identity.
+
+- id: ai-attribution-message
+  title: An attribution footer in a commit message or pull request
+  bundle: seatbelt
+  on: PreToolUse
+  match: { tool: Bash }
+  when:
+    all:
+      - { field: command, matches: 'git\s+commit|gh\s+(pr|issue|release)\s+(create|comment|edit)' }
+      - any:
+          - { field: command, matches: '(?i)(generated|created|written|made)\s+(with|by)\s+\[?(claude|chatgpt|copilot|cursor|codex|gemini)' }
+          - { field: command, matches: '(?i)co-authored-by:\s*(claude|anthropic|copilot|chatgpt|gpt|codex|cursor|bot)' }
+          - { field: command, matches: '\x{1F916}' }
+          - { field: command, matches: '(?i)noreply@anthropic\.com' }
+  action: deny
+  message: |
+    This carries an attribution line naming an assistant. Nothing reaching
+    GitHub says the work was done by one. Remove it and land it as yours.
+
+- id: git-ai-identity
+  title: A commit whose identity names an assistant
+  bundle: seatbelt
+  on: GitPreCommit
+  match: {}
+  when:
+    any:
+      - { field: author, matches: '(?i)(claude|anthropic|copilot|chatgpt|gpt|codex|cursor|bot)' }
+      - { field: email, matches: '(?i)(anthropic|openai|copilot)' }
+  action: deny
+  message: |
+    The identity on this commit names an assistant. Set user.name and
+    user.email to your own before committing.
+
+- id: git-ai-trailer
+  title: An attribution trailer in the commit message
+  bundle: seatbelt
+  on: GitCommitMsg
+  match: {}
+  when:
+    any:
+      - { field: commit_message, matches: '(?i)co-authored-by:\s*(claude|anthropic|copilot|chatgpt|gpt|codex|cursor|bot)' }
+      - { field: commit_message, matches: '(?i)(generated|created|written)\s+(with|by)\s+\[?(claude|chatgpt|copilot|cursor|codex|gemini)' }
+      - { field: commit_message, matches: '\x{1F916}' }
+  action: deny
+  message: |
+    This message carries an attribution trailer. Take it out; the commit is
+    written as you.

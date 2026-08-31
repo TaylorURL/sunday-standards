@@ -1,0 +1,8 @@
+runs:
+- ~/.sunday/profile/state/design-runs
+pointer: current*.json
+answered:
+- pass
+- fixed
+- na
+- n/a

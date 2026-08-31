@@ -1,0 +1,11 @@
+runs:
+- ~/.sunday/profile/state/db-runs
+pointer: current*.json
+results: answers
+tree: target
+scoped: true
+answered:
+- pass
+- fixed
+- na
+- n/a

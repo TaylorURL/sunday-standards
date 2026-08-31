@@ -1,0 +1,203 @@
+- id: PRC-01
+  title: The Run Was Opened Before The Work
+  ask: A run exists and the changes are recorded against it. A schema change made outside a run is a change
+    nothing compared against the code, and afterwards it looks exactly like one that was checked.
+  probe: true
+  fix: db-pass.py start --target <path> --project-ref <ref>
+- id: PRC-02
+  title: The Database Was Read, Not Reasoned About
+  ask: The schema came from a query against the live database in this run. Migrations describe what was
+    intended; only the catalogue says what is there. A table created by hand, an index dropped in the
+    dashboard, and a policy edited in the console are all invisible to a repository read.
+  probe: true
+  fix: scripts/probe.py all --root <path> --out /tmp/db-probe.json, then db-pass.py probe --file /tmp/db-probe.json
+- id: PRC-03
+  title: Every Table Was Ruled On
+  ask: Each table in the probe ends either kept with its reader named, or removed. A table nobody looked
+    at and a table considered and kept are indistinguishable without this, and the second is the whole
+    point of the run.
+  probe: true
+  fix: db-pass.py tables, then for each one either drop it or table-clear it naming what reads it.
+- id: PRC-04
+  title: Nothing Was Dropped Without A Backup
+  ask: Every table this run removes was exported first and the run records where the export went. A drop
+    is the one action here with no undo, and a restore nobody can find is the same as no backup at all.
+  probe: true
+  fix: Export the rows, then db-pass.py backup --path <where> --tables <names>, or answer n/a when the
+    run dropped nothing.
+- id: PRC-05
+  title: What Belongs To Another Checklist Was Handed Over
+  ask: This checklist asks whether the database and the code agree, and nothing else. Whether a service
+    answers belongs to the stack checklist, how long a page takes to the performance checklist. Each is
+    named and handed over, never resolved here and never dropped.
+  probe: true
+  severity: required
+  fix: db-pass.py delegate --to <stack|perf|design|seo> --note "<what was found>", or answer n/a when
+    nothing outside this checklist came up.
+- id: PRC-06
+  title: Every Applicable Gate Is Answered
+  ask: No gate is left silent. A gate that is not met is work to do; the only ways past one are changing
+    the database or the code, or naming the condition that puts it out of scope.
+  probe: true
+  fix: db-pass.py status lists what is open.
+- id: PRC-07
+  title: The Filled Checklist Was Rendered
+  ask: The run ends with the whole checklist shown - every gate, its verdict, the evidence, what was delegated,
+    and a section listing anything answered not applicable and why.
+  probe: true
+  fix: db-pass.py report
+- id: ORP-01
+  title: Every Table Has A Reader In The Code
+  ask: Each table in the public schema is named somewhere in the application or its functions, outside
+    its own migration and outside a test. A table named only by the migration that created it has no reader,
+    whatever its row count says, and a row count is what makes it look alive.
+  probe: true
+  fix: Drop the table in a migration, or name what reads it with db-pass.py table-clear <name> --note
+    "<the reader>".
+- id: ORP-02
+  title: Every Deployed Function Has Source Here
+  ask: Each function deployed to the project has a directory in supabase/functions/. One that does not
+    is running code nobody can read, review, or change, and it will keep running long after the feature
+    is gone.
+  probe: true
+  fix: Restore the source from the deployment, or delete the function once nothing calls it.
+- id: ORP-03
+  title: Every Deployed Function Has A Caller
+  ask: Each deployed function is named by the application, by another function, or by a scheduled job.
+    One with no caller is an open route into the database that nothing is watching.
+  probe: true
+  fix: Delete the function, or record the caller when it is invoked from outside this repository - a webhook,
+    a userscript, another service.
+- id: ORP-04
+  title: Every Scheduled Job Still Has Somewhere To Go
+  ask: Each cron job names a table and a function that still exist. A job whose target is gone either
+    fails on every tick or, worse, still succeeds against a table nothing reads - which is how a five-minute
+    import outlives the feature it fed.
+  probe: true
+  fix: Unschedule the job in a migration, or repoint it.
+- id: ORP-05
+  title: Every Database Function Has A Caller
+  ask: Each function in the public schema is called by the application, by a trigger, or by a job. The
+    ones left behind are usually the reporting helpers of a removed feature, and they hold references
+    that keep its tables from being dropped cleanly.
+  probe: true
+  severity: required
+  fix: Drop the function in a migration, or name its caller.
+- id: ORP-06
+  title: Nothing In The Repository Points At What Is Gone
+  ask: The code names no table, function, or job that the database does not have. This is the same drift
+    read from the other side, and it fails at runtime rather than sitting quietly - a service still calling
+    a table dropped in a previous cleanup answers every request with an error.
+  probe: true
+  fix: Remove the dead call, or restore what it needs.
+- id: SEC-01
+  title: Row-Level Security Is On For Every Table
+  ask: Every table in the public schema has RLS enabled. The API serves the schema as it finds it, so
+    a table without RLS is readable by anyone holding the publishable key, which ships in the page.
+  probe: true
+  fix: alter table public.<name> enable row level security, in a migration, plus the policies that restore
+    the access the app needs.
+- id: SEC-02
+  title: Every Protected Table Has A Policy
+  ask: A table with RLS on and no policy denies everyone, which usually means a feature is silently broken
+    rather than secure. Each table has at least one policy, or is recorded as deliberately closed.
+  probe: true
+  fix: Write the policy, or table-clear the table naming why it is closed to everyone.
+- id: SEC-03
+  title: No Blanket Policy Stands In For A Real One
+  ask: No policy uses a bare true for all roles on a table holding real data. A policy of true is RLS
+    switched on in name only, and it reads as protection in every audit that counts policies rather than
+    reading them.
+  probe: false
+  severity: required
+  fix: Replace the blanket policy with one that names the role and the condition.
+- id: SEC-04
+  title: The Anonymous Role Reaches Only What It Should
+  ask: Tables granted to anon are the ones a signed-out visitor is meant to read. Anything else is reachable
+    with the key in the page, whatever the application does with it.
+  probe: true
+  fix: revoke all on public.<name> from anon, in a migration.
+- id: SEC-05
+  title: The Service Key Is Not In Anything The Browser Loads
+  ask: No service-role key appears in source, in a build output, or in a variable with a client-side prefix.
+    It bypasses every policy above, so one occurrence undoes the whole group.
+  probe: true
+  fix: Move the key to a server-side variable and rotate it, since a key that reached a bundle is public
+    from then on.
+- id: HLT-01
+  title: No Relation Is Mostly Empty Space
+  ask: No table holds a small number of live rows in a large file. A delete frees space for reuse and
+    never returns it, so a table that once grew keeps its size for good - and every scan, every autovacuum
+    pass, and every cleanup job reads all of it. A gigabyte holding a megabyte of rows is the shape.
+  probe: true
+  severity: blocker
+  fix: vacuum full <relation> to reclaim it, then schedule the prune that stops it returning.
+- id: HLT-02
+  title: The Housekeeping Tables Are Pruned
+  ask: The tables the platform writes to on its own - the cron run log, the stored HTTP responses, the
+    storage and auth logs - have something removing old rows. None of them prune themselves, and none
+    of them are anybody's feature, so they grow until they are the largest thing in the database.
+  probe: true
+  severity: blocker
+  fix: Schedule a prune and a vacuum behind it, in a migration.
+- id: HLT-03
+  title: Autovacuum Has Run Recently On Every Busy Table
+  ask: Every table taking writes has been autovacuumed recently. One that has not is either quiet or blocked,
+    and the second is what precedes the bloat above. A long transaction or a stalled replication slot
+    is the usual reason.
+  probe: true
+  fix: Find what is holding the transaction horizon back - a stalled slot, an idle transaction - and clear
+    it.
+- id: HLT-04
+  title: No Statement Is Running Long Enough To Block Others
+  ask: No statement's worst execution approaches the statement timeout. One that does will not merely
+    fail itself; it holds a connection while everything else queues behind it, and the errors surface
+    on unrelated pages. The counters behind this are cumulative since they were last reset, so a statement
+    fixed this morning still shows its worst run from last month - check the statement still exists before
+    treating it as live, and dispute the gate with that reading rather than recording a pass the counter
+    does not support.
+  probe: true
+  severity: blocker
+  fix: Index it, bound it, or move it off the request path. A timeout raised to hide it moves the failure
+    rather than fixing it.
+- id: HLT-05
+  title: No Table Is Rewritten Far More Than It Is Read
+  ask: No table shows a row-update count wildly out of proportion to its size and its readers. Hundreds
+    of updates per row is an import re-writing rows that have not changed, which costs write throughput
+    and vacuum work continuously.
+  probe: true
+  fix: Make the import write only what differs, or slow its schedule to what the data actually changes
+    at.
+- id: HLT-06
+  title: Replication Slots Are Alive And Caught Up
+  ask: Every replication slot is active and close to the write position. An inactive slot holds write-ahead
+    log for a reader that has gone, which fills the disk and stops vacuum reclaiming anything.
+  probe: true
+  fix: Drop the abandoned slot, or restore the consumer that owns it.
+- id: HLT-07
+  title: No Index Is Carried For Nothing
+  ask: Every non-unique index has been scanned. One that never has costs write time and storage on every
+    insert and gives nothing back. Read this against a counter that has been running long enough to mean
+    something.
+  probe: true
+  fix: Drop the index in a migration, or record that the counter is too young to judge it.
+- id: MIG-01
+  title: Every Table Is Created By A Migration
+  ask: Each table in the database is named by a file in supabase/migrations/. A table made in the dashboard
+    works exactly as well until the schema has to be rebuilt, reviewed, or reasoned about.
+  probe: true
+  fix: Write the migration that creates it, matching what the catalogue reports.
+- id: MIG-02
+  title: Every Migration Has Been Applied
+  ask: No migration file describes a table or function the database does not have. An unapplied migration
+    in the tree reads as shipped and is the reason a fix lands green and changes nothing.
+  probe: true
+  severity: blocker
+  fix: Apply it, or delete it when it was superseded.
+- id: MIG-03
+  title: Destructive Migrations Say Where The Backup Went
+  ask: Every migration that drops a table names, in the file, where the rows were exported. Six months
+    later the file is the only record anyone will find, and the question it has to answer is where the
+    data went.
+  probe: true
+  fix: Add the location to the migration's header comment.
