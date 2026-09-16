@@ -37,7 +37,7 @@
       "id": "PRC-02",
       "title": "Existing Project Read First",
       "rule": "Before designing anything, read what is already there: token file, theme definitions, brand assets, and at least two sibling components or pages. Name what you found and what you inherited from it. A deliverable that ignores the surrounding system is a generic template.",
-      "source": "SKILL.md#five-principles (1)",
+      "source": "SKILL.md#five-principles-across-all-domains (1)",
       "kinds": [
         "*"
       ],
@@ -52,7 +52,7 @@
       "id": "PRC-03",
       "title": "Copy Held To avoid-ai-writing",
       "rule": "Every word a person reads in this deliverable \u2014 headline, label, caption, empty state, tooltip, error, alt text, speaker note \u2014 goes through the avoid-ai-writing skill, invoked via the Skill tool, applied from the loaded skill rather than from memory.",
-      "source": "SKILL.md#five-principles (4)",
+      "source": "SKILL.md#five-principles-across-all-domains (4)",
       "kinds": [
         "*"
       ],
@@ -67,7 +67,7 @@
       "id": "PRC-04",
       "title": "No Context-Derived Copy",
       "rule": "No user-facing string exists because of the conversation that produced it. The test: would this sentence be here if the product had always been this way? Copy that answers a question, justifies a scoping decision, apologises for what a page is not, or narrates what changed fails.",
-      "source": "INTELLIGENCE.md#operating-principles",
+      "source": "references/intelligence.md#operating-principles",
       "kinds": [
         "*"
       ],

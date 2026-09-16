@@ -74,7 +74,7 @@ HOME = Path.home()
 # that already ran the sync, which is exactly the machine that did not need it.
 SKILL = Path(__file__).resolve().parent.parent
 if not (SKILL / "checklist" / "gates").is_dir():
-    SKILL = HOME / ".sunday/profile" / "skills" / "design"
+    SKILL = HOME / ".sunday/profile" / "skills" / "design-checklist"
 GATES_DIR = SKILL / "checklist" / "gates"
 
 # Every instruction this file prints has to name a command that exists where it is

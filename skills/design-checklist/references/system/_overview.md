@@ -137,14 +137,14 @@ python scripts/system/search-slides.py "cta" --context --position 9 --prev-emoti
 
 | File | Purpose |
 |------|---------|
-| `data/slide-strategies.csv` | 15 deck structures + emotion arcs + sparkline beats |
-| `data/slide-layouts.csv` | 25 layouts + component variants + animations |
-| `data/slide-layout-logic.csv` | Goal → Layout + break_pattern flag |
-| `data/slide-typography.csv` | Content type → Typography scale |
-| `data/slide-color-logic.csv` | Emotion → Color treatment |
-| `data/slide-backgrounds.csv` | Slide type → image category and overlay style |
-| `data/slide-copy.csv` | 25 copywriting formulas (PAS, AIDA, FAB) |
-| `data/slide-charts.csv` | 25 chart types with Chart.js config |
+| `data/system/slide-strategies.csv` | 15 deck structures + emotion arcs + sparkline beats |
+| `data/system/slide-layouts.csv` | 25 layouts + component variants + animations |
+| `data/system/slide-layout-logic.csv` | Goal → Layout + break_pattern flag |
+| `data/system/slide-typography.csv` | Content type → Typography scale |
+| `data/system/slide-color-logic.csv` | Emotion → Color treatment |
+| `data/system/slide-backgrounds.csv` | Slide type → image category and overlay style |
+| `data/system/slide-copy.csv` | 25 copywriting formulas (PAS, AIDA, FAB) |
+| `data/system/slide-charts.csv` | 25 chart types with Chart.js config |
 
 ### Contextual Decision Flow
 
