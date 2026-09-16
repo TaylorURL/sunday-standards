@@ -1,11 +1,11 @@
 # Sunday standards
 
-Checklists and standards for [Sunday](https://github.com/bradley-t-t/sunday),
+Checklists and standards for [Sunday](https://github.com/TaylorURL/sunday),
 published from the profile they are used in daily.
 
 ## Adding them
 
-    sunday profile add https://github.com/bradley-t-t/sunday-standards.git
+    sunday profile add https://github.com/TaylorURL/sunday-standards.git
 
 They load underneath your own profile, so a rule, checklist or skill of yours
 with the same name wins. Nothing here replaces what you already have.
