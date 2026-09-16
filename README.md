@@ -21,6 +21,14 @@ smaller skills that shape how work is stated rather than what it does.
 Two rules: nothing lands naming an assistant as its author, and browsing goes
 through the in-app browser.
 
+`tools/` holds the programs those skills and rules call. A skill arriving
+without the program it runs fails on the machine it lands on, so the two travel
+together. The four `*-pass.py` entries there are thin wrappers: each checklist's
+real engine ships inside its own skill, beside the gates it reads, and the
+wrapper only finds it. The rest stand alone: the writing and comment ledgers,
+the documentation ledger, the run sweep, the version and badge steps, and a
+preflight that refuses to build from a checkout a sibling has moved past.
+
 ## What is not here
 
 Anything answering to one company's own services, hosts, clients or schedules.

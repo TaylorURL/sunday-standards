@@ -7,7 +7,7 @@
       "id": "UNI-01",
       "title": "Three Themes: Dark, Light, Gray",
       "rule": "Every colour, border, shadow, and surface reads correctly in dark, light, AND gray. All three are defined and all three are looked at. A colour that only works in one theme is a defect, not a preference.",
-      "source": "SKILL.md#five-principles (2)",
+      "source": "SKILL.md#five-principles-across-all-domains (2)",
       "kinds": [
         "web-ui",
         "component",
@@ -36,7 +36,7 @@
       "id": "UNI-02",
       "title": "No Hardcoded Colour Outside The Token Block",
       "rule": "No hex, rgb(), hsl(), or oklch() literal appears outside :root / [data-theme]. Every colour in markup and components references a named token. A literal is a colour that breaks in one of the three themes.",
-      "source": "SKILL.md#five-principles (2); slop gate 48",
+      "source": "SKILL.md#five-principles-across-all-domains (2); slop gate 48",
       "kinds": [
         "web-ui",
         "component",
@@ -56,7 +56,7 @@
       "id": "UNI-03",
       "title": "UI Labels Are Title Case",
       "rule": "Menu items, dropdown entries, buttons, tabs, and column headings are Title Case — 'Plugin Library', 'Join Our Discord', 'Get in Touch'; short prepositions and articles stay lowercase. Sentence case on a control label is a defect. Sentences, descriptions, blurbs, helper text, and prose headlines stay sentence case.",
-      "source": "SKILL.md#five-principles (5); INTELLIGENCE.md",
+      "source": "SKILL.md#five-principles-across-all-domains (5); references/intelligence.md",
       "kinds": [
         "web-ui",
         "component",
@@ -76,7 +76,7 @@
       "id": "UNI-04",
       "title": "No Emojis Anywhere",
       "rule": "No emoji in the deliverable, its copy, its code, its comments, or its filenames. Not as an icon, not as a bullet, not as decoration.",
-      "source": "INTELLIGENCE.md#operating-principles; slop gate 30b",
+      "source": "references/intelligence.md#operating-principles; slop gate 30b",
       "kinds": [
         "*"
       ],
@@ -91,7 +91,7 @@
       "id": "UNI-05",
       "title": "Behaviour Preserved On Redesign",
       "rule": "When redesigning existing code, only presentation changes. Routes, handlers, data contracts, side effects, and component ownership stay identical. State the files touched before touching them; deletions need explicit confirmation.",
-      "source": "SKILL.md#five-principles (3); implementation safety rail",
+      "source": "SKILL.md#five-principles-across-all-domains (3); implementation safety rail",
       "kinds": [
         "web-ui",
         "component"
@@ -107,7 +107,7 @@
       "id": "UNI-06",
       "title": "Changed Only What Was Asked",
       "rule": "The deliverable changes what the user asked for and nothing else. Nothing was swapped in to replace something they asked to have removed. Improvements they did not request are offered in a sentence at the end, not shipped.",
-      "source": "INTELLIGENCE.md#operating-principles",
+      "source": "references/intelligence.md#operating-principles",
       "kinds": [
         "*"
       ],

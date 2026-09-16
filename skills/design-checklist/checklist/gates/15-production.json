@@ -14,7 +14,7 @@
       "id": "PROD-01",
       "title": "Real 404 On Unknown Paths",
       "rule": "A GET to a path that does not exist returns HTTP 404, not the SPA shell with 200. Stripe, Apple, Linear, Vercel, and Anthropic all return a real 404 status; a client-routed rewrite that maps every unknown path to /index.html leaves crawlers, monitors, and typoed shares unable to tell a real page from a miss, and search engines index the shell as content.",
-      "source": "references/site-audit-2026-08.md#spa-catch-all",
+      "source": "site audit 2026-08, spa-catch-all",
       "severity": "blocker",
       "check": {
         "type": "manual"
@@ -25,7 +25,7 @@
       "id": "PROD-02",
       "title": "robots.txt Is A Real File, Not The SPA Shell",
       "rule": "/robots.txt returns text/plain, not text/html. On four audited sites the SPA catch-all swallowed the request and returned the app shell instead; a bot expecting text/plain and getting HTML stops parsing.",
-      "source": "references/site-audit-2026-08.md#robots-shell",
+      "source": "site audit 2026-08, robots-shell",
       "severity": "required",
       "check": {
         "type": "require_file",
@@ -43,7 +43,7 @@
       "id": "PROD-02B",
       "title": "sitemap.xml Is A Real File, Not The SPA Shell",
       "rule": "/sitemap.xml returns application/xml, not text/html. Every <loc> in it uses the site's production origin, not the deployment host. setxfootball.org's sitemap listed eight URLs on a domain that does not resolve.",
-      "source": "references/site-audit-2026-08.md#sitemap-shell",
+      "source": "site audit 2026-08, sitemap-shell",
       "severity": "required",
       "check": {
         "type": "require_file",
@@ -61,7 +61,7 @@
       "id": "PROD-03",
       "title": "OG And Twitter Card Meta Present",
       "rule": "Every landing page ships og:title, og:description, og:image, og:url, and twitter:card. Without them shared links render as a blank card with a hostname — a two-second signal to the reader that no one polished this. Four audited sites shipped one or none.",
-      "source": "references/site-audit-2026-08.md#og-twitter-missing",
+      "source": "site audit 2026-08, og-twitter-missing",
       "severity": "required",
       "check": {
         "type": "require_regex",
@@ -80,7 +80,7 @@
       "id": "PROD-04",
       "title": "Canonical URL Points To The Public Origin",
       "rule": "<link rel=\"canonical\">, og:url, twitter:image, and every <loc> in sitemap.xml carry the site's production origin, not the deployment host. domebreak.com shipped every one of these pointing at domebreak.vercel.app, so Google consolidated signals onto the wrong subdomain and every social share linked to the unbranded URL.",
-      "source": "references/site-audit-2026-08.md#canonical-wrong-host",
+      "source": "site audit 2026-08, canonical-wrong-host",
       "severity": "blocker",
       "check": {
         "type": "forbid_regex",
@@ -93,7 +93,7 @@
       "id": "PROD-05",
       "title": "Apple Touch Icon At Web Root",
       "rule": "<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\"> is declared in the head AND the file exists at /apple-touch-icon.png as a 180x180 PNG. iOS fetches the root path directly before parsing HTML; a 404 costs the home-screen icon. Three of four audited flagship sites lacked the file at the root path.",
-      "source": "references/site-audit-2026-08.md#apple-touch-missing",
+      "source": "site audit 2026-08, apple-touch-missing",
       "severity": "required",
       "check": {
         "type": "require_regex",
@@ -108,7 +108,7 @@
       "id": "PROD-06",
       "title": "Privacy And Terms Are Linked And Reachable",
       "rule": "The footer links to /privacy and /terms, both routes return 200, and both render the site's header and footer. Six audited sites lacked one or both entirely, including a game distributor that requires account signup with no ToS anywhere.",
-      "source": "references/site-audit-2026-08.md#privacy-terms-missing",
+      "source": "site audit 2026-08, privacy-terms-missing",
       "severity": "required",
       "check": {
         "type": "require_regex",
@@ -125,7 +125,7 @@
       "id": "PROD-07",
       "title": "Static Shell For The Bots",
       "rule": "The pre-JS HTML body contains the site's H1, nav, and footer landmarks — not an empty <div id=\"root\"></div> and not a single line telling the visitor to enable JavaScript. Four audited SPAs rendered only that sentence; Stripe, Linear, and Anthropic all serve a static or SSR'd shell that is legible without JS.",
-      "source": "references/site-audit-2026-08.md#blank-flash",
+      "source": "site audit 2026-08, blank-flash",
       "severity": "required",
       "check": {
         "type": "forbid_regex",
@@ -138,7 +138,7 @@
       "id": "PROD-08",
       "title": "Footer Names The Entity And The Year Comes From Date",
       "rule": "The copyright line names a non-empty legal entity and the year is computed from new Date().getFullYear(). rootrise shipped '(c) 2026 . All rights reserved.' - an unresolved template variable to unauthenticated visitors; impressiva and deluxlavello hardcoded 2026 as a string literal that will go stale on 2027-01-01. A marketing footer also carries no build string: v1.4.2, Build 0048, and last sync are devtool fixtures, held by TST-27.",
-      "source": "references/site-audit-2026-08.md#footer-entity-year",
+      "source": "site audit 2026-08, footer-entity-year",
       "severity": "required",
       "check": {
         "type": "forbid_regex",
@@ -151,7 +151,7 @@
       "id": "PROD-09",
       "title": "No Placeholder Tokens In The Shipped Bundle",
       "rule": "No REPLACE_ME, TODO, FIXME, XXX, lorem ipsum, or example.com appears in HTML or JS served to the browser. deluxfit's Instagram and TikTok footer links pointed at https://instagram.com/REPLACE_ME in production.",
-      "source": "references/site-audit-2026-08.md#placeholder-tokens",
+      "source": "site audit 2026-08, placeholder-tokens",
       "severity": "blocker",
       "check": {
         "type": "forbid_regex",
@@ -163,7 +163,7 @@
       "id": "PROD-10",
       "title": "No Coming Soon In Production",
       "rule": "No 'coming soon', 'under construction', or 'TBD' in shipped copy. If the feature is not ready, do not render its card. deluxfit shipped a 'Coming Soon' feature card live.",
-      "source": "references/site-audit-2026-08.md#coming-soon",
+      "source": "site audit 2026-08, coming-soon",
       "severity": "required",
       "check": {
         "type": "forbid_regex",
@@ -175,7 +175,7 @@
       "id": "PROD-11",
       "title": "No Dev, Admin, Or Staging Routes In The Public Bundle",
       "rule": "The client bundle does not declare /dev, /admin, /staging, /debug, or /internal routes. deluxfit shipped /dev-upload and eight /admin/* routes into the public bundle, all discoverable by reading the JS. Admin surfaces belong on a separate deployment, subdomain, or behind an auth-gated route the marketing build does not know about.",
-      "source": "references/site-audit-2026-08.md#dev-routes-leaked",
+      "source": "site audit 2026-08, dev-routes-leaked",
       "severity": "blocker",
       "check": {
         "type": "forbid_regex",
@@ -187,7 +187,7 @@
       "id": "PROD-12",
       "title": "Title Names The Page And The Brand",
       "rule": "<title> contains a separator (|, —, ·) or a descriptor beyond the brand name — 'Speedway 146 | Go-Kart Racing in Baytown, TX', not 'Smyrna Tools'. A one-word title costs the search-result subtitle and reads as unfinished.",
-      "source": "references/site-audit-2026-08.md#single-word-title",
+      "source": "site audit 2026-08, single-word-title",
       "severity": "required",
       "check": {
         "type": "forbid_regex",
@@ -200,7 +200,7 @@
       "id": "PROD-13",
       "title": "No Meta Keywords",
       "rule": "No <meta name=\"keywords\"> in the head. Google stopped honoring it in 2009; Stripe, Apple, Linear, Vercel, and Anthropic do not ship one. Shipping one reads as SEO cargo-culting.",
-      "source": "references/site-audit-2026-08.md#meta-keywords",
+      "source": "site audit 2026-08, meta-keywords",
       "severity": "advisory",
       "check": {
         "type": "forbid_regex",
@@ -212,7 +212,7 @@
       "id": "PROD-14",
       "title": "Custom 404 With The Site's Chrome",
       "rule": "A request to a non-existent path renders a custom 404 page with the site's header, footer, and a link home — not the framework default or a bare 'Not Found'. deluxlavello ships one; three others render the default Vercel or CRA error page.",
-      "source": "references/site-audit-2026-08.md#custom-404",
+      "source": "site audit 2026-08, custom-404",
       "severity": "required",
       "check": {
         "type": "require_file",
@@ -238,7 +238,7 @@
       "id": "PROD-15",
       "title": "OG Image Is A 1200x630 Raster Share Card",
       "rule": "og:image is a raster PNG or JPG at 1200x630, purpose-built as a share card — not the logo file, not an SVG. LinkedIn and Slack do not render SVG previews reliably, and a bare logo strands the reader with no context.",
-      "source": "references/site-audit-2026-08.md#og-image-quality",
+      "source": "site audit 2026-08, og-image-quality",
       "severity": "required",
       "check": {
         "type": "forbid_regex",
@@ -251,7 +251,7 @@
       "id": "PROD-16",
       "title": "TLS Serves The Right Cert",
       "rule": "https://<site> completes the TLS handshake without a SNI mismatch and returns a real body, not a domain-parking page. speedway146.com failed TLSV1_ALERT_UNRECOGNIZED_NAME and its A record pointed at a Sedo parking IP — the site had effectively been offline for weeks and nobody noticed.",
-      "source": "references/site-audit-2026-08.md#tls-parking",
+      "source": "site audit 2026-08, tls-parking",
       "severity": "blocker",
       "check": {
         "type": "manual"
@@ -262,7 +262,7 @@
       "id": "PROD-17",
       "title": "GitHub Repo Homepage Points At The Live Site",
       "rule": "The repo's `homepageUrl` on GitHub resolves and matches the actual live site. TaylorURL/baytowngocarts-com listed speedway146.com (a dead domain) while the site is at baytowngokarts.com — every tool that walks repo metadata probed the wrong host.",
-      "source": "references/site-audit-2026-08.md#stale-repo-homepage",
+      "source": "site audit 2026-08, stale-repo-homepage",
       "severity": "required",
       "check": {
         "type": "manual"
@@ -273,7 +273,7 @@
       "id": "PROD-18",
       "title": "Form Inputs Have Real Labels",
       "rule": "Every <input>, <select>, and <textarea> has an associated <label for> or aria-label. Placeholder text is not a label — it disappears when the user starts typing and fails screen readers. Two audited sites used placeholder-only inputs on numeric and search fields. See also FLD-03 which enforces this on component libraries.",
-      "source": "references/site-audit-2026-08.md#placeholder-labels",
+      "source": "site audit 2026-08, placeholder-labels",
       "severity": "required",
       "check": {
         "type": "placeholder_only_label"

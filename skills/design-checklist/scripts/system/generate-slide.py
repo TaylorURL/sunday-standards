@@ -18,7 +18,6 @@ from pathlib import Path
 from datetime import datetime
 
 SCRIPT_DIR = Path(__file__).parent
-DATA_DIR = SCRIPT_DIR.parent / "data"
 TOKENS_CSS = Path(__file__).resolve().parents[4] / "assets" / "design-tokens.css"
 TOKENS_JSON = Path(__file__).resolve().parents[4] / "assets" / "design-tokens.json"
 OUTPUT_DIR = Path(__file__).resolve().parents[4] / "assets" / "designs" / "slides"
