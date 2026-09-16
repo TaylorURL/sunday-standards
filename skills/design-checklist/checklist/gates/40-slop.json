@@ -7,7 +7,7 @@
       "id": "SLP-00",
       "title": "Pre-Emit Critique Scored And Stamped",
       "rule": "Before the gate sweep, score the planned output 1-5 on Philosophy, Hierarchy, Execution, Specificity, Restraint, and Variety. Anything under 3 triggers a revision pass first. Stamp the six scores at the top of the file.",
-      "source": "slop-test.md#pre-emit-self-critique",
+      "source": "references/hallmark/references/slop-test.md#pre-emit-self-critique",
       "kinds": [
         "web-ui",
         "component"

@@ -1,28 +1,31 @@
 name: Attribution
 
-# The pull request gate in ci.yml refuses attribution before a merge. This is
-# the reading behind it: what a push actually added to a protected branch,
-# checked after the fact, so anything that reaches the branch by a route the
-# gate never saw is loud within the minute rather than found weeks later.
+# Two readings of the same rule. On a pull request it refuses attribution
+# before the merge, which is the context `develop` requires. On a push it reads
+# what actually landed, so anything reaching a protected branch by a route the
+# pull request gate never saw is loud within the minute rather than found weeks
+# later.
 
 on:
+  pull_request:
+    branches: [main, develop]
   push:
     branches: [main, develop]
   workflow_dispatch:
 
 concurrency:
-  group: attribution-${{ github.ref }}
+  group: attribution-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   attribution:
     runs-on: ubuntu-latest
     steps:
-      - name: Scan what this push added
+      - name: Scan what this branch added
         env:
           GH_TOKEN: ${{ github.token }}
-          BEFORE: ${{ github.event.before }}
-          AFTER: ${{ github.sha }}
+          BEFORE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AFTER: ${{ github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -36,7 +39,8 @@ jobs:
           # A new branch, or a force push past the recorded base, leaves nothing
           # to compare against. Read the head commit alone rather than the whole
           # history it sits on: this gate is about what arrived, not what was
-          # already there.
+          # already there. A pull request always has a base, so it always gets
+          # the comparison and every commit on the branch is read.
           if [ -z "${BEFORE:-}" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             range_api="repos/$GITHUB_REPOSITORY/commits/$AFTER"
             jqf='[.] | .[] | [.sha, (.commit.author.name + " <" + .commit.author.email + ">"), (.commit.committer.name + " <" + .commit.committer.email + ">"), (.commit.message | gsub("\n"; "\\n"))] | @tsv'
@@ -52,22 +56,22 @@ jobs:
             # than failing the run: refusing here would say attribution was
             # found, which is the opposite of what happened.
             gh api "repos/$GITHUB_REPOSITORY/commits/$AFTER" --jq "$head_jq" > added.tsv 2>/dev/null \
-              || { echo "Could not read the pushed range."; exit 1; }
+              || { echo "Could not read the range."; exit 1; }
           fi
 
           fail=0
           while IFS=$'\t' read -r sha author committer message; do
             [ -n "$sha" ] || continue
             if printf '%s %s' "$author" "$committer" | grep -qiE "$ident"; then
-              echo "::error::${sha:0:8} landed on ${GITHUB_REF_NAME} authored or committed by an AI identity: $author / $committer"
+              echo "::error::${sha:0:8} is authored or committed by an AI identity: $author / $committer"
               fail=1
             fi
             if printf '%s' "$message" | grep -qiE "$msg"; then
-              echo "::error::${sha:0:8} landed on ${GITHUB_REF_NAME} carrying AI attribution in its message."
+              echo "::error::${sha:0:8} carries AI attribution in its message."
               fail=1
             fi
           done < added.tsv
 
           rm -f added.tsv
           [ "$fail" -eq 0 ] || exit 1
-          echo "Nothing this push added carries attribution."
+          echo "Nothing this branch added carries attribution."
