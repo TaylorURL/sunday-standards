@@ -14,7 +14,7 @@ from pathlib import Path
 from math import log
 from collections import defaultdict
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR = Path(__file__).parent.parent.parent / "data" / "system"
 MAX_RESULTS = 3
 
 CSV_CONFIG = {

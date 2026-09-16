@@ -33,7 +33,7 @@
   when: always
   severity: blocker
   fix: Read the project's tokens/theme/siblings, then resolve with the file paths as evidence.
-  source: SKILL.md#five-principles (1)
+  source: SKILL.md#five-principles-across-all-domains (1)
 - id: PRC-03
   title: Copy Held To avoid-ai-writing
   ask: Every word a person reads in this deliverable — headline, label, caption, empty state, tooltip,
@@ -46,7 +46,7 @@
   severity: blocker
   fix: Invoke avoid-ai-writing, apply it, then run $(sunday tool writing-pass.py) check on the
     files carrying copy.
-  source: SKILL.md#five-principles (4)
+  source: SKILL.md#five-principles-across-all-domains (4)
 - id: PRC-04
   title: No Context-Derived Copy
   ask: 'No user-facing string exists because of the conversation that produced it. The test: would this
@@ -58,7 +58,7 @@
   when: copy
   severity: blocker
   fix: Rewrite the string to state what the thing is, with no memory of being built.
-  source: INTELLIGENCE.md#operating-principles
+  source: references/intelligence.md#operating-principles
 - id: PRC-05
   title: Rendered Output Verified
   ask: Anything that renders is opened and looked at before it is called done — page in the browser pane,
@@ -95,7 +95,7 @@
   when: css
   severity: blocker
   fix: Add the gray theme token block alongside dark and light, and re-check every surface in it.
-  source: SKILL.md#five-principles (2)
+  source: SKILL.md#five-principles-across-all-domains (2)
 - id: UNI-02
   title: No Hardcoded Colour Outside The Token Block
   ask: No hex, rgb(), hsl(), or oklch() literal appears outside :root / [data-theme]. Every colour in
@@ -110,7 +110,7 @@
   when: css
   severity: blocker
   fix: Lift the value into the token block as a named variable, then reference var(--name).
-  source: SKILL.md#five-principles (2); slop gate 48
+  source: SKILL.md#five-principles-across-all-domains (2); slop gate 48
 - id: UNI-03
   title: UI Labels Are Title Case
   ask: Menu items, dropdown entries, buttons, tabs, and column headings are Title Case — 'Plugin Library',
@@ -128,7 +128,7 @@
   when: copy
   severity: blocker
   fix: Retitle the label. Check every control label in the deliverable, including ones you did not write.
-  source: SKILL.md#five-principles (5); INTELLIGENCE.md
+  source: SKILL.md#five-principles-across-all-domains (5); references/intelligence.md
 - id: UNI-04
   title: No Emojis Anywhere
   ask: No emoji in the deliverable, its copy, its code, its comments, or its filenames. Not as an icon,
@@ -139,7 +139,7 @@
   when: always
   severity: blocker
   fix: Replace with an SVG icon from the page's single icon library, or drop it and lead with typography.
-  source: INTELLIGENCE.md#operating-principles; slop gate 30b
+  source: references/intelligence.md#operating-principles; slop gate 30b
 - id: UNI-05
   title: Behaviour Preserved On Redesign
   ask: When redesigning existing code, only presentation changes. Routes, handlers, data contracts, side
@@ -152,7 +152,7 @@
   when: redesign
   severity: blocker
   fix: Diff the behaviour surface; revert anything that is not presentation.
-  source: SKILL.md#five-principles (3); implementation safety rail
+  source: SKILL.md#five-principles-across-all-domains (3); implementation safety rail
 - id: UNI-06
   title: Changed Only What Was Asked
   ask: The deliverable changes what the user asked for and nothing else. Nothing was swapped in to replace
@@ -164,7 +164,7 @@
   when: always
   severity: blocker
   fix: Revert the unrequested change and put it in the closing note instead.
-  source: INTELLIGENCE.md#operating-principles
+  source: references/intelligence.md#operating-principles
 - id: UNI-07
   title: Semantic Tokens, Not Ad-Hoc Values
   ask: 'Spacing, radius, shadow, z-index, and type sizes come from the named scale. Arbitrary values (padding:
@@ -786,7 +786,7 @@
   fix: 'For Vercel or Netlify SPAs, add a not-found route that responds with a 404 status, and remove
     any catch-all rewrite to /index.html that lacks a status. Verify: curl -s -o /dev/null -w ''%{http_code}''
     https://<site>/$(uuidgen) — must be 404.'
-  source: references/site-audit-2026-08.md#spa-catch-all
+  source: site audit 2026-08, spa-catch-all
 - id: PROD-02
   title: robots.txt Is A Real File, Not The SPA Shell
   ask: /robots.txt returns text/plain, not text/html. On four audited sites the SPA catch-all swallowed
@@ -796,7 +796,7 @@
   severity: required
   fix: 'Add public/robots.txt (or app/robots.ts). Verify content-type after deploy: curl -sI https://<site>/robots.txt
     | grep -i content-type — must be text/plain.'
-  source: references/site-audit-2026-08.md#robots-shell
+  source: site audit 2026-08, robots-shell
 - id: PROD-02B
   title: sitemap.xml Is A Real File, Not The SPA Shell
   ask: /sitemap.xml returns application/xml, not text/html. Every <loc> in it uses the site's production
@@ -806,7 +806,7 @@
   severity: required
   fix: 'Add public/sitemap.xml (or app/sitemap.ts) whose entries derive from the site''s public origin
     env var. Verify: curl -sI https://<site>/sitemap.xml | grep -i content-type — must be application/xml.'
-  source: references/site-audit-2026-08.md#sitemap-shell
+  source: site audit 2026-08, sitemap-shell
 - id: PROD-03
   title: OG And Twitter Card Meta Present
   ask: Every landing page ships og:title, og:description, og:image, og:url, and twitter:card. Without
@@ -816,7 +816,7 @@
   severity: required
   fix: Add the four meta tags to the head. og:image must be a raster PNG or JPG at 1200x630; SVG is unreliable
     across social platforms.
-  source: references/site-audit-2026-08.md#og-twitter-missing
+  source: site audit 2026-08, og-twitter-missing
 - id: PROD-04
   title: Canonical URL Points To The Public Origin
   ask: <link rel="canonical">, og:url, twitter:image, and every <loc> in sitemap.xml carry the site's
@@ -827,7 +827,7 @@
   severity: blocker
   fix: Set the site's public origin as an env var (NEXT_PUBLIC_SITE_URL) and derive every canonical, OG
     URL, and sitemap entry from it. Never hardcode the deployment host.
-  source: references/site-audit-2026-08.md#canonical-wrong-host
+  source: site audit 2026-08, canonical-wrong-host
 - id: PROD-05
   title: Apple Touch Icon At Web Root
   ask: <link rel="apple-touch-icon" href="/apple-touch-icon.png"> is declared in the head AND the file
@@ -839,7 +839,7 @@
   fix: 'Add <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"> and drop the 180x180
     PNG at public/apple-touch-icon.png. Verify: curl -sI https://<site>/apple-touch-icon.png — must return
     200 and image/png.'
-  source: references/site-audit-2026-08.md#apple-touch-missing
+  source: site audit 2026-08, apple-touch-missing
 - id: PROD-06
   title: Privacy And Terms Are Linked And Reachable
   ask: The footer links to /privacy and /terms, both routes return 200, and both render the site's header
@@ -850,7 +850,7 @@
   fix: 'Add both pages as real routes with the site''s normal header and footer. Verify: curl -s -o /dev/null
     -w ''%{http_code}'' https://<site>/privacy — must be 200; view-source must show the site''s nav and
     footer landmarks.'
-  source: references/site-audit-2026-08.md#privacy-terms-missing
+  source: site audit 2026-08, privacy-terms-missing
 - id: PROD-07
   title: Static Shell For The Bots
   ask: The pre-JS HTML body contains the site's H1, nav, and footer landmarks — not an empty <div id="root"></div>
@@ -861,7 +861,7 @@
   severity: required
   fix: Turn on SSR (Next.js), pre-render with vite-plugin-ssr / astro, or hand-write a static shell with
     the H1, nav, and footer inline in index.html.
-  source: references/site-audit-2026-08.md#blank-flash
+  source: site audit 2026-08, blank-flash
 - id: PROD-08
   title: Footer Names The Entity And The Year Comes From Date
   ask: 'The copyright line names a non-empty legal entity and the year is computed from new Date().getFullYear().
@@ -874,7 +874,7 @@
   fix: 'Use new Date().getFullYear() for the year and pass a non-empty entity name into the footer component.
     Test the logged-out render: an unauthenticated visitor must see the entity, not an empty span. Strip
     any version or build string from a marketing footer.'
-  source: references/site-audit-2026-08.md#footer-entity-year
+  source: site audit 2026-08, footer-entity-year
 - id: PROD-09
   title: No Placeholder Tokens In The Shipped Bundle
   ask: No REPLACE_ME, TODO, FIXME, XXX, lorem ipsum, or example.com appears in HTML or JS served to the
@@ -883,7 +883,7 @@
   probe: true
   severity: blocker
   fix: Grep the built bundle before deploy and fail the build on any hit.
-  source: references/site-audit-2026-08.md#placeholder-tokens
+  source: site audit 2026-08, placeholder-tokens
 - id: PROD-10
   title: No Coming Soon In Production
   ask: No 'coming soon', 'under construction', or 'TBD' in shipped copy. If the feature is not ready,
@@ -891,7 +891,7 @@
   probe: true
   severity: required
   fix: Remove the card, or gate it behind a feature flag that stays false until it is real.
-  source: references/site-audit-2026-08.md#coming-soon
+  source: site audit 2026-08, coming-soon
 - id: PROD-11
   title: No Dev, Admin, Or Staging Routes In The Public Bundle
   ask: The client bundle does not declare /dev, /admin, /staging, /debug, or /internal routes. deluxfit
@@ -902,7 +902,7 @@
   severity: blocker
   fix: Move admin routes into a separate app, a separate deployment, or a route group the marketing build
     does not compile. If the route must live in the same repo, exclude it from the production build.
-  source: references/site-audit-2026-08.md#dev-routes-leaked
+  source: site audit 2026-08, dev-routes-leaked
 - id: PROD-12
   title: Title Names The Page And The Brand
   ask: <title> contains a separator (|, —, ·) or a descriptor beyond the brand name — 'Speedway 146 |
@@ -911,7 +911,7 @@
   probe: true
   severity: required
   fix: Extend the title with a separator and a phrase that names what the page is or does.
-  source: references/site-audit-2026-08.md#single-word-title
+  source: site audit 2026-08, single-word-title
 - id: PROD-13
   title: No Meta Keywords
   ask: No <meta name="keywords"> in the head. Google stopped honoring it in 2009; Stripe, Apple, Linear,
@@ -919,7 +919,7 @@
   probe: true
   severity: advisory
   fix: Delete the tag. Real SEO lives in the title, description, structured data, and content.
-  source: references/site-audit-2026-08.md#meta-keywords
+  source: site audit 2026-08, meta-keywords
 - id: PROD-14
   title: Custom 404 With The Site's Chrome
   ask: A request to a non-existent path renders a custom 404 page with the site's header, footer, and
@@ -929,7 +929,7 @@
   severity: required
   fix: Add app/not-found.tsx (Next) or a NotFound component wired to a catch-all route. It must render
     the site's header, footer, and a link to /.
-  source: references/site-audit-2026-08.md#custom-404
+  source: site audit 2026-08, custom-404
 - id: PROD-15
   title: OG Image Is A 1200x630 Raster Share Card
   ask: og:image is a raster PNG or JPG at 1200x630, purpose-built as a share card — not the logo file,
@@ -939,7 +939,7 @@
   severity: required
   fix: Design a 1200x630 PNG that names the page or product, save it as public/og.png, and reference it
     from og:image and twitter:image.
-  source: references/site-audit-2026-08.md#og-image-quality
+  source: site audit 2026-08, og-image-quality
 - id: PROD-16
   title: TLS Serves The Right Cert
   ask: https://<site> completes the TLS handshake without a SNI mismatch and returns a real body, not
@@ -950,7 +950,7 @@
   fix: Verify with `openssl s_client -servername <host> -connect <host>:443 </dev/null` and `curl -sI
     https://<host>`. Wire the site into ~/error-reporting so a red uptime shows up in Discord instead
     of getting found by an audit.
-  source: references/site-audit-2026-08.md#tls-parking
+  source: site audit 2026-08, tls-parking
 - id: PROD-17
   title: GitHub Repo Homepage Points At The Live Site
   ask: The repo's `homepageUrl` on GitHub resolves and matches the actual live site. TaylorURL/baytowngocarts-com
@@ -960,7 +960,7 @@
   severity: required
   fix: 'gh repo edit <owner>/<repo> --homepage https://<live-url>. Verify: gh repo view <owner>/<repo>
     --json homepageUrl.'
-  source: references/site-audit-2026-08.md#stale-repo-homepage
+  source: site audit 2026-08, stale-repo-homepage
 - id: PROD-18
   title: Form Inputs Have Real Labels
   ask: Every <input>, <select>, and <textarea> has an associated <label for> or aria-label. Placeholder
@@ -970,7 +970,7 @@
   probe: true
   severity: required
   fix: Add a visible <label htmlFor="...">Name</label> or aria-label to every input, select, and textarea.
-  source: references/site-audit-2026-08.md#placeholder-labels
+  source: site audit 2026-08, placeholder-labels
 - id: PLT-01
   title: The Page Draws Something Of Its Own
   ask: A surface with a subject draws it. Photography shows what a place looked like on one afternoon
@@ -2721,7 +2721,7 @@
   severity: blocker
   fix: 'Score the six axes, revise anything under 3, then stamp: /* pre-emit critique: P5 H4 E5 S4 R5
     V5 */'
-  source: slop-test.md#pre-emit-self-critique
+  source: references/hallmark/references/slop-test.md#pre-emit-self-critique
 - id: SLP-01
   title: Display Font Is Not A Default
   ask: The display font is not Inter, Roboto, Open Sans, Poppins, Lato, or a system default, and it is
